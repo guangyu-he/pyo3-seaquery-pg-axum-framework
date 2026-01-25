@@ -1,10 +1,10 @@
 [project]
-name = "gt-rust-py-pg-axum-framework"
+name = "pyo3-seaquery-pg-axum-framework"
 dynamic = ["version"]
 description = "GoldenTech Rust Python PostgreSQL Axum Framework"
 requires-python = ">=3.13,<3.14"
 authors = [
-    { name = "GoldenTech GmbH", email = "service@golden-tech.de" }
+    { name = "Guangyu He", email = "me@heguangyu.net" }
 ]
 dependencies = [
     "pydantic",

@@ -1,7 +1,7 @@
 import asyncio
 
 from pydantic import BaseModel
-from gt_rust_py_pg_axum_framework import AuthUserStruct, test_db_connection_py
+from pyo3_seaquery_pg_axum_framework import AuthUserStruct, test_db_connection_py
 
 
 class User(BaseModel):

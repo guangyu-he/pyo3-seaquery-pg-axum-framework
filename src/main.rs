@@ -1,69 +1,13 @@
-use pyo3::prelude::*;
-use pyo3::types::PyDict;
-
-use axum::response::IntoResponse;
 use axum::{Router, routing::get};
 use tower_http::trace::{DefaultMakeSpan, DefaultOnRequest, DefaultOnResponse, TraceLayer};
 use tracing::Level;
 use utoipa::OpenApi;
 use utoipa_swagger_ui::SwaggerUi;
 
-use tracing_subscriber::EnvFilter;
-
-fn init_tracing() {
-    tracing_subscriber::fmt()
-        .with_env_filter(EnvFilter::try_from_default_env().unwrap_or_else(|_| "info".into()))
-        .init();
-}
-
-#[derive(OpenApi)]
-#[openapi(paths(py_example, health), components(schemas()))]
-struct ApiDoc;
-
-#[utoipa::path(
-    get,
-    path = "/py_example",
-    responses(
-        (status = 200, description = "Example of python binding", body = String)
-    )
-)]
-async fn py_example() -> impl IntoResponse {
-    let result: PyResult<String> = Python::attach(|py| {
-        let sys = py.import("sys")?;
-        let path = sys.getattr("path")?;
-        path.call_method1("append", (".venv/lib/python3.13/site-packages",))?;
-        path.call_method1("append", ("./python",))?;
-
-        let module = py.import("main")?;
-        let user_cls = module.getattr("User")?;
-
-        let kwargs = PyDict::new(py);
-        kwargs.set_item("id", 1)?;
-        kwargs.set_item("name", "Bob")?;
-        kwargs.set_item("email", "test@example.de")?;
-
-        let user = user_cls.call((), Some(&kwargs))?;
-
-        let s: String = user.getattr("greet")?.call0()?.extract()?;
-        Ok(s)
-    });
-
-    match result {
-        Ok(s) => s.into_response(),
-        Err(e) => format!("python error: {e}").into_response(),
-    }
-}
-
-#[utoipa::path(
-    get,
-    path = "/health",
-    responses(
-        (status = 200, description = "Health check OK", body = String)
-    )
-)]
-async fn health() -> &'static str {
-    "OK"
-}
+use pyo3_seaquery_pg_axum_framework::endpoints::ApiDoc;
+use pyo3_seaquery_pg_axum_framework::endpoints::health::health;
+use pyo3_seaquery_pg_axum_framework::endpoints::py_example::py_example;
+use pyo3_seaquery_pg_axum_framework::server::init_tracing;
 
 #[tokio::main]
 async fn main() {

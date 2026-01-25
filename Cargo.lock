@@ -617,27 +617,6 @@ dependencies = [
 ]
 
 [[package]]
-name = "gt-rust-py-pg-axum-framework"
-version = "0.1.0"
-dependencies = [
- "axum",
- "chrono",
- "pyo3",
- "pyo3-async-runtimes",
- "sea-query",
- "sea-query-sqlx",
- "serde",
- "serde-pyobject",
- "sqlx",
- "tokio",
- "tower-http",
- "tracing",
- "tracing-subscriber",
- "utoipa",
- "utoipa-swagger-ui",
-]
-
-[[package]]
 name = "hashbrown"
 version = "0.15.5"
 source = "registry+https://github.com/rust-lang/crates.io-index"
@@ -1440,6 +1419,27 @@ dependencies = [
  "pyo3-build-config",
  "quote",
  "syn",
+]
+
+[[package]]
+name = "pyo3-seaquery-pg-axum-framework"
+version = "0.1.0"
+dependencies = [
+ "axum",
+ "chrono",
+ "pyo3",
+ "pyo3-async-runtimes",
+ "sea-query",
+ "sea-query-sqlx",
+ "serde",
+ "serde-pyobject",
+ "sqlx",
+ "tokio",
+ "tower-http",
+ "tracing",
+ "tracing-subscriber",
+ "utoipa",
+ "utoipa-swagger-ui",
 ]
 
 [[package]]

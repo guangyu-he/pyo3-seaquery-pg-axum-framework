@@ -1,14 +1,19 @@
 [package]
-name = "gt-rust-py-pg-axum-framework"
+name = "pyo3-seaquery-pg-axum-framework"
 version = "0.1.0"
 edition = "2024"
+authors = ["Guangyu He <me@heguangyu.net>"]
+description = "An Axum framework with PostgreSQL using SeaQuery and SQLx, exposed and connected to Python via PyO3."
+documentation = "readme.md"
+exclude = ["tests/*", "examples/*"]
+categories = ["web-programming", "database", "python-extensions"]
 
 [lib]
-name = "gt_rust_py_pg_axum_framework"
+name = "pyo3_seaquery_pg_axum_framework"
 crate-type = ["cdylib", "rlib"]
 
 [[bin]]
-name = "gt-rust-py-pg-axum-framework"
+name = "pyo3-seaquery-pg-axum-framework"
 path = "src/main.rs"
 
 [dependencies]

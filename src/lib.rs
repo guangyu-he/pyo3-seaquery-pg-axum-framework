@@ -1,9 +1,13 @@
 use pyo3::pymodule;
 
 mod database;
+pub mod server;
+
+pub mod endpoints;
 
 #[pymodule]
-mod gt_rust_py_pg_axum_framework {
+/// Python module definition
+mod pyo3_seaquery_pg_axum_framework {
     #[pymodule_export]
     use crate::database::auth_user::AuthUserStruct;
     #[pymodule_export]
