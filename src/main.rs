@@ -3,8 +3,18 @@ use pyo3::types::PyDict;
 
 use axum::response::IntoResponse;
 use axum::{Router, routing::get};
+use tower_http::trace::{DefaultMakeSpan, DefaultOnRequest, DefaultOnResponse, TraceLayer};
+use tracing::Level;
 use utoipa::OpenApi;
 use utoipa_swagger_ui::SwaggerUi;
+
+use tracing_subscriber::EnvFilter;
+
+fn init_tracing() {
+    tracing_subscriber::fmt()
+        .with_env_filter(EnvFilter::try_from_default_env().unwrap_or_else(|_| "info".into()))
+        .init();
+}
 
 #[derive(OpenApi)]
 #[openapi(paths(py_example))]
@@ -46,9 +56,17 @@ async fn py_example() -> impl IntoResponse {
 
 #[tokio::main]
 async fn main() {
+    init_tracing();
+
     let app = Router::new()
         .route("/", get(py_example))
-        .merge(SwaggerUi::new("/docs").url("/api-docs/openapi.json", ApiDoc::openapi()));
+        .merge(SwaggerUi::new("/docs").url("/api-docs/openapi.json", ApiDoc::openapi()))
+        .layer(
+            TraceLayer::new_for_http()
+                .make_span_with(DefaultMakeSpan::new().level(Level::INFO))
+                .on_request(DefaultOnRequest::new().level(Level::INFO))
+                .on_response(DefaultOnResponse::new().level(Level::INFO)),
+        );
 
     let listener = tokio::net::TcpListener::bind("127.0.0.1:3000")
         .await

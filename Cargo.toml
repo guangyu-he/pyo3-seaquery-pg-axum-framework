@@ -28,6 +28,9 @@ tokio = { version = "1.49", features = ["full"] }
 axum = { version = "0.8", features = ["json"] }
 utoipa = { version = "5.4", features = ["axum_extras"] }
 utoipa-swagger-ui = { version = "9.0", features = ["axum"] }
+tracing = "0.1"
+tracing-subscriber = { version = "0.3", features = ["env-filter"] }
+tower-http = { version = "0.6", features = ["trace"] }
 
 [features]
 extension-module = ["pyo3/extension-module", "pyo3/abi3-py313", "pyo3/generate-import-lib"]
