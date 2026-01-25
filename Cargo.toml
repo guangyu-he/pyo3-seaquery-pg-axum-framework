@@ -26,6 +26,8 @@ serde = { version = "1.0.228", features = ["derive"] }
 chrono = { version = "0.4", features = ["serde"] }
 tokio = { version = "1.49", features = ["full"] }
 axum = { version = "0.8", features = ["json"] }
+utoipa = { version = "5.4", features = ["axum_extras"] }
+utoipa-swagger-ui = { version = "9.0", features = ["axum"] }
 
 [features]
 extension-module = ["pyo3/extension-module", "pyo3/abi3-py313", "pyo3/generate-import-lib"]

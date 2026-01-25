@@ -3,7 +3,20 @@ use pyo3::types::PyDict;
 
 use axum::response::IntoResponse;
 use axum::{Router, routing::get};
+use utoipa::OpenApi;
+use utoipa_swagger_ui::SwaggerUi;
 
+#[derive(OpenApi)]
+#[openapi(paths(py_example))]
+struct ApiDoc;
+
+#[utoipa::path(
+    get,
+    path = "/",
+    responses(
+        (status = 200, description = "OK", body = String)
+    )
+)]
 async fn py_example() -> impl IntoResponse {
     let result: PyResult<String> = Python::attach(|py| {
         let sys = py.import("sys")?;
@@ -33,7 +46,9 @@ async fn py_example() -> impl IntoResponse {
 
 #[tokio::main]
 async fn main() {
-    let app = Router::new().route("/", get(py_example));
+    let app = Router::new()
+        .route("/", get(py_example))
+        .merge(SwaggerUi::new("/docs").url("/api-docs/openapi.json", ApiDoc::openapi()));
 
     let listener = tokio::net::TcpListener::bind("127.0.0.1:3000")
         .await
