@@ -1,0 +1,30 @@
+[package]
+name = "gt-rust-py-pg-axum-framework"
+version = "0.1.0"
+edition = "2024"
+
+[lib]
+name = "gt_rust_py_pg_axum_framework"
+crate-type = ["cdylib", "rlib"]
+
+[[bin]]
+name = "gt-rust-py-pg-axum-framework"
+path = "src/main.rs"
+
+[dependencies]
+pyo3 = { version = "0.27", features = ["auto-initialize", "chrono"] }
+pyo3-async-runtimes = { version = "0.27", features = ["attributes", "tokio-runtime"] }
+serde-pyobject = "0.8.0"
+sea-query = { version = "1.0.0-rc.29", features = ["with-chrono"] }
+sqlx = { version = "0.8", features = [
+    "runtime-tokio-native-tls",
+    "postgres",
+    "chrono"
+] }
+sea-query-sqlx = { version = "0.8.0-rc.11", features = ["sqlx-postgres", "with-chrono"] }
+serde = { version = "1.0.228", features = ["derive"] }
+chrono = { version = "0.4", features = ["serde"] }
+tokio = { version = "1.49", features = ["full"] }
+
+[features]
+extension-module = ["pyo3/extension-module", "pyo3/abi3-py313", "pyo3/generate-import-lib"]
