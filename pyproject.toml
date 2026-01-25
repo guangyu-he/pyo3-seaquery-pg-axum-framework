@@ -1,0 +1,33 @@
+[project]
+name = "gt-rust-py-pg-axum-framework"
+dynamic = ["version"]
+description = "GoldenTech Rust Python PostgreSQL Axum Framework"
+requires-python = ">=3.13,<3.14"
+authors = [
+    { name = "GoldenTech GmbH", email = "service@golden-tech.de" }
+]
+dependencies = [
+    "pydantic",
+]
+
+[tool.uv]
+extra-index-url = ["https://pypi.golden-tech.de"]
+
+[dependency-groups]
+dev = [
+    "maturin",
+    "ruff",
+    "black",
+    "mypy",
+    "isort",
+    "pytest",
+    "python-dotenv",
+    "coverage"
+]
+
+[build-system]
+requires = ["maturin>=1.9,<2.0"]
+build-backend = "maturin"
+
+[tool.maturin]
+features = ["pyo3/extension-module", "pyo3/abi3-py313", "pyo3/generate-import-lib"]
