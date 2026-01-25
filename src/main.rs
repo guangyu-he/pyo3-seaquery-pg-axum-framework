@@ -17,14 +17,14 @@ fn init_tracing() {
 }
 
 #[derive(OpenApi)]
-#[openapi(paths(py_example))]
+#[openapi(paths(py_example, health), components(schemas()))]
 struct ApiDoc;
 
 #[utoipa::path(
     get,
-    path = "/",
+    path = "/py_example",
     responses(
-        (status = 200, description = "OK", body = String)
+        (status = 200, description = "Example of python binding", body = String)
     )
 )]
 async fn py_example() -> impl IntoResponse {
@@ -54,12 +54,24 @@ async fn py_example() -> impl IntoResponse {
     }
 }
 
+#[utoipa::path(
+    get,
+    path = "/health",
+    responses(
+        (status = 200, description = "Health check OK", body = String)
+    )
+)]
+async fn health() -> &'static str {
+    "OK"
+}
+
 #[tokio::main]
 async fn main() {
     init_tracing();
 
     let app = Router::new()
-        .route("/", get(py_example))
+        .route("/py_example", get(py_example))
+        .route("/health", get(health))
         .merge(SwaggerUi::new("/docs").url("/api-docs/openapi.json", ApiDoc::openapi()))
         .layer(
             TraceLayer::new_for_http()
