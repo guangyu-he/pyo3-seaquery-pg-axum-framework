@@ -25,6 +25,7 @@ sea-query-sqlx = { version = "0.8.0-rc.11", features = ["sqlx-postgres", "with-c
 serde = { version = "1.0.228", features = ["derive"] }
 chrono = { version = "0.4", features = ["serde"] }
 tokio = { version = "1.49", features = ["full"] }
+axum = { version = "0.8", features = ["json"] }
 
 [features]
 extension-module = ["pyo3/extension-module", "pyo3/abi3-py313", "pyo3/generate-import-lib"]
