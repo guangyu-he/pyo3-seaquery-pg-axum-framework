@@ -17,7 +17,7 @@ enum AuthUser {
     DateJoined,
 }
 
-#[pyclass(dict, subclass, get_all, set_all)]
+#[pyclass(from_py_object, dict, subclass, get_all, set_all)]
 #[derive(Clone, Debug, Serialize, sqlx::FromRow)]
 pub struct AuthUserStruct {
     id: i32,
