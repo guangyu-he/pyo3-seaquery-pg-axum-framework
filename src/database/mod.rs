@@ -6,6 +6,7 @@ use tokio::sync::OnceCell;
 use tracing::info;
 
 pub mod auth_user;
+pub mod auth_user_py;
 
 static DB_POOL: OnceCell<sqlx::PgPool> = OnceCell::const_new();
 
