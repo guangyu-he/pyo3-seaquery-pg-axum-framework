@@ -78,7 +78,12 @@ impl AuthUserStruct {
         user_id: i32,
     ) -> PyResult<Bound<'p, PyAny>> {
         future_into_py(py, async move {
-            let pool = crate::database::start_conn_pool().await;
+            let pool = crate::database::start_conn_pool().await.map_err(|e| {
+                pyo3::exceptions::PyRuntimeError::new_err(format!(
+                    "Failed to get database connection pool: {}",
+                    e
+                ))
+            })?;
             match get_auth_user_by_id(&pool, user_id).await {
                 Ok(user) => Ok(user),
                 Err(e) => Err(pyo3::exceptions::PyRuntimeError::new_err(format!(
@@ -97,7 +102,12 @@ impl AuthUserStruct {
     pub fn save<'p>(&self, py: Python<'p>) -> PyResult<Bound<'p, PyAny>> {
         let user = self.clone();
         future_into_py(py, async move {
-            let pool = crate::database::start_conn_pool().await;
+            let pool = crate::database::start_conn_pool().await.map_err(|e| {
+                pyo3::exceptions::PyRuntimeError::new_err(format!(
+                    "Failed to get database connection pool: {}",
+                    e
+                ))
+            })?;
             match upsert_auth_user(&pool, user.email, user.username, user.date_joined).await {
                 Ok(user) => Ok(user),
                 Err(e) => {
@@ -205,7 +215,6 @@ pub async fn upsert_auth_user(
 /// * `Some(AuthUserStruct)` - The auth user with the given id.
 /// * `None` - If the user does not exist.
 async fn get_auth_user_by_id(pool: &PgPool, user_id: i32) -> Result<AuthUserStruct, sqlx::Error> {
-    let mut connection = pool.acquire().await?;
     let (sql, values) = Query::select()
         .columns([
             AuthUser::Id,
@@ -217,30 +226,31 @@ async fn get_auth_user_by_id(pool: &PgPool, user_id: i32) -> Result<AuthUserStru
         .and_where(Expr::col(AuthUser::Id).eq(user_id))
         .build_sqlx(PostgresQueryBuilder);
     let row_structured = sqlx::query_as_with::<_, AuthUserStruct, _>(&sql, values)
-        .fetch_one(&mut *connection)
+        .fetch_one(pool)
         .await?;
     Ok(row_structured)
 }
 
+#[cfg(test)]
 mod tests {
-    #[allow(unused_imports)]
     use super::*;
-    #[allow(unused_imports)]
     use crate::database;
 
     #[tokio::test]
-    async fn test_create_table() {
-        let pool = database::start_conn_pool().await;
+    async fn test_create_table() -> anyhow::Result<()> {
+        let pool = database::start_conn_pool().await?;
         create_table(&pool)
             .await
             .expect("Failed to create auth_user table");
+        Ok(())
     }
 
     #[tokio::test]
-    async fn test_upsert_auth_user() {
-        let pool = database::start_conn_pool().await;
+    async fn test_upsert_auth_user() -> anyhow::Result<()> {
+        let pool = database::start_conn_pool().await?;
         upsert_auth_user(&pool, "test@test.de", "testuser", Utc::now())
             .await
             .expect("Failed to upsert auth user");
+        Ok(())
     }
 }
