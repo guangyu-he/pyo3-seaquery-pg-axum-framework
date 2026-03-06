@@ -14,13 +14,13 @@ class User(BaseModel):
 
 
 if __name__ == "__main__":
+
     async def run():
         await test_db_connection_py()
         user = AuthUserStruct(username="Alice", email="test@example.de")
-        user = await user.save()
+        user = await user.save_async()
         print(user)
         user.email = "testnew@example.de"
         print(user)
-
 
     asyncio.run(run())
