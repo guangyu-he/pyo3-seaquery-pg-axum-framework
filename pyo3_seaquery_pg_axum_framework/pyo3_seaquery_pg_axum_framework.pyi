@@ -1,0 +1,26 @@
+from typing import Self, Dict, Any
+from datetime import datetime
+
+class AuthUserStruct:
+    id: int
+    email: str
+    username: str
+    last_login: datetime | None
+    last_update: datetime
+    date_joined: datetime
+
+    def __repr__(self) -> str: ...
+    def to_dict(self) -> Dict[str, Any]: ...
+    def __new__(cls, email: str, username: str, **kwargs: Dict[str, Any]) -> Self: ...
+    @classmethod
+    async def get_by_unique_py_async(
+        cls, email: str | None = None, id: int | None = None
+    ) -> Self | None: ...
+    @classmethod
+    def get_by_unique_py(
+        cls, email: str | None = None, id: int | None = None
+    ) -> Self | None: ...
+    async def save_async(self) -> Self: ...
+    def save(self) -> Self: ...
+
+async def test_db_connection_py() -> bool: ...
