@@ -17,9 +17,7 @@ extra-index-url = ["https://pypi.golden-tech.de"]
 dev = [
     "maturin",
     "ruff",
-    "black",
-    "mypy",
-    "isort",
+    "ty",
     "pytest",
     "python-dotenv",
     "coverage"
