@@ -25,13 +25,13 @@ python/
 
 ## Getting Started
 
-### 1. Start PostgreSQL (optional)
+### 1. Start PostgreSQL (optional — server starts without it)
 
 ```bash
 docker compose up -d
 ```
 
-This starts a PostgreSQL 18 instance with default test credentials (`testdbuser` / `testdbpass` / `testdb`) on port 5432.
+This starts a PostgreSQL 18 instance with default test credentials (`testdbuser` / `testdbpass` / `testdb`) on port 5432. If the database is not available, the server still starts but DB-dependent endpoints (e.g. `/db_health`) return `503 Service Unavailable`.
 
 ### 2. Set up Python environment
 
@@ -54,13 +54,14 @@ Server listens at `http://127.0.0.1:3000`.
 
 ## API Endpoints
 
-| Method | Path                      | Description                    |
-| ------ | ------------------------- | ------------------------------ |
-| `GET`  | `/health`                 | Health check                   |
-| `GET`  | `/handle_py_example_cls`  | Call Python class from Rust    |
-| `GET`  | `/handle_py_example_func` | Call Python function from Rust |
-| `GET`  | `/docs`                   | Swagger UI                     |
-| `GET`  | `/api-docs/openapi.json`  | OpenAPI spec                   |
+| Method | Path                     | Description                                          |
+| ------ | ------------------------ | ---------------------------------------------------- |
+| `GET`  | `/health`                | Health check                                         |
+| `GET`  | `/db_health`             | Database health check (503 if DB not configured)     |
+| `GET`  | `/py_example_cls`        | Call Python class from Rust                          |
+| `GET`  | `/py_example_func`       | Call Python function from Rust                       |
+| `GET`  | `/docs`                  | Swagger UI                                           |
+| `GET`  | `/api-docs/openapi.json` | OpenAPI spec                                         |
 
 ## Calling Rust from Python
 

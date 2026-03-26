@@ -44,23 +44,25 @@ python python/call_rust_from_py.py
 - **Python → Rust:** PyO3 `#[pyclass]`/`#[pyfunction]` exports compiled via maturin as a native module
 
 **Key layers:**
-- `src/main.rs` — Axum router setup, PYTHONHOME init, Swagger UI mount at `/docs`
+- `src/main.rs` — Axum router setup, PYTHONHOME init, optional DB pool (`Option<PgPool>`), Swagger UI mount at `/docs`
 - `src/lib.rs` — PyO3 module definition exporting `AuthUserStruct` and `test_db_connection_py`
 - `src/database/mod.rs` — Singleton `PgPool` via `OnceCell`, lazy-initialized from env vars
 - `src/database/auth_user.rs` — `AuthUserStruct` model with SeaQuery-based `create_table`, `upsert`, `get_by_unique`
 - `src/database/auth_user_py.rs` — Python bindings for AuthUser (sync + async variants, Pydantic-compatible)
-- `src/endpoints/` — Axum handlers; `py_example.rs` demonstrates calling Python from Rust
+- `src/endpoints/database.rs` — DB health check endpoint (returns 503 when DB not configured)
+- `src/endpoints/py_example.rs` — Demonstrates calling Python from Rust
 - `build.rs` — Detects Python `sys.base_prefix` at compile time, embeds as `PY_BASE_PREFIX` env var
 
-**Database pattern:** SeaQuery builds SQL, SQLx executes it against PostgreSQL. Pool has 5 max / 2 min connections.
+**Database is optional:** The server starts without DB config; only DB-dependent endpoints are affected. SeaQuery builds SQL, SQLx executes it against PostgreSQL. Pool has 5 max / 2 min connections.
 
 **Python path management:** Endpoints dynamically add venv site-packages and `python/` dir to `sys.path` at runtime.
 
 ## API Endpoints
 
 - `GET /health` — Health check
-- `GET /handle_py_example_cls` — Calls Python `User` class from Rust
-- `GET /handle_py_example_func` — Calls Python `hello()` function from Rust
+- `GET /db_health` — Database health check (503 if DB not configured)
+- `GET /py_example_cls` — Calls Python `User` class from Rust
+- `GET /py_example_func` — Calls Python `hello()` function from Rust
 - `GET /docs` — Swagger UI
 - `GET /api-docs/openapi.json` — OpenAPI spec
 
