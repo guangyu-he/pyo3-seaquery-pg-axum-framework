@@ -40,7 +40,7 @@ pub async fn handle_py_example_cls() -> impl IntoResponse {
 
 #[utoipa::path(
     get,
-    path = "/handle_py_example_cls",
+    path = "/handle_py_example_func",
     responses(
         (status = 200, description = "Example of Python function binding", body = String)
     )
