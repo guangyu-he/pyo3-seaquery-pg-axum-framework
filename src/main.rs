@@ -29,10 +29,10 @@ async fn main() {
     init_tracing();
 
     let pool = match start_conn_pool().await {
-        Ok(pool) => pool.clone(),
+        Ok(pool) => Some(pool.clone()),
         Err(e) => {
-            error!("Failed to create database pool: {}", e);
-            panic!("Failed to create database pool");
+            error!("Failed to create database pool: {} — starting without database", e);
+            None
         }
     };
 
