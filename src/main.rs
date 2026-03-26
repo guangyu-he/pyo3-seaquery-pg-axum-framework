@@ -1,3 +1,5 @@
+use std::env;
+
 use axum::{Router, routing::get};
 use tower_http::trace::{DefaultMakeSpan, DefaultOnRequest, DefaultOnResponse, TraceLayer};
 use tracing::Level;
@@ -6,15 +8,27 @@ use utoipa_swagger_ui::SwaggerUi;
 
 use pyo3_seaquery_pg_axum_framework::endpoints::ApiDoc;
 use pyo3_seaquery_pg_axum_framework::endpoints::health::health;
-use pyo3_seaquery_pg_axum_framework::endpoints::py_example::py_example;
+use pyo3_seaquery_pg_axum_framework::endpoints::py_example::{
+    handle_py_example_cls, handle_py_example_func,
+};
 use pyo3_seaquery_pg_axum_framework::middleware::log::init_tracing;
 
 #[tokio::main]
 async fn main() {
+    // Set PYTHONHOME so the embedded Python interpreter can find its standard library.
+    // PY_BASE_PREFIX is baked in at compile time by build.rs (points to the real Python
+    // installation, not the venv — the venv only has site-packages).
+    // Can be overridden at runtime via the PYTHONHOME env var.
+    if env::var("PYTHONHOME").is_err() {
+        // SAFETY: called once at startup before any other threads are spawned.
+        unsafe { env::set_var("PYTHONHOME", env!("PY_BASE_PREFIX")) };
+    }
+
     init_tracing();
 
     let app = Router::new()
-        .route("/py_example", get(py_example))
+        .route("/handle_py_example_cls", get(handle_py_example_cls))
+        .route("/handle_py_example_func", get(handle_py_example_func))
         .route("/health", get(health))
         .merge(SwaggerUi::new("/docs").url("/api-docs/openapi.json", ApiDoc::openapi()))
         .layer(
