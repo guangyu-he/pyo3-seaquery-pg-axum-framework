@@ -1,7 +1,7 @@
 use pyo3::pymodule;
 
 mod database;
-pub mod server;
+pub mod middleware;
 
 pub mod endpoints;
 

@@ -7,7 +7,7 @@ use utoipa_swagger_ui::SwaggerUi;
 use pyo3_seaquery_pg_axum_framework::endpoints::ApiDoc;
 use pyo3_seaquery_pg_axum_framework::endpoints::health::health;
 use pyo3_seaquery_pg_axum_framework::endpoints::py_example::py_example;
-use pyo3_seaquery_pg_axum_framework::server::init_tracing;
+use pyo3_seaquery_pg_axum_framework::middleware::log::init_tracing;
 
 #[tokio::main]
 async fn main() {
