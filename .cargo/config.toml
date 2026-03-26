@@ -1,2 +1,7 @@
+# This configuration helps PyO3 boost development building speed as it tells the
+# embedded Python interpreter where to find its standard library.
+# So PyO3 does not need to compile every time it is used.
+# Only works from Unix-like systems.
+# Equivalent to setting PYO3_PYTHON in the shell.
 [env]
 PYO3_PYTHON = { value = ".venv/bin/python", relative = true }
