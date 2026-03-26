@@ -1,63 +1,101 @@
 # pyo3-seaquery-pg-axum-framework
 
-Rust + Python + PostgreSQL starter that combines Axum (HTTP server), SQLx + SeaQuery (DB), and PyO3 (Python bindings).
-Includes a tiny example endpoint that calls into Python, plus a Python entrypoint that calls back into Rust.
+A Rust web framework combining **Axum** (HTTP), **SQLx + SeaQuery** (PostgreSQL), and **PyO3** (embedded Python) with bidirectional Rust-Python interop.
 
-## What’s inside
+## Architecture
 
-- **Rust server**: Axum app with `/health` and `/py_example`, plus Swagger UI at `/docs`.
-- **Database layer**: SQLx + SeaQuery with a simple `AuthUserStruct` model and upsert/get-by-id helpers.
-- **Python bridge**: PyO3 module exposing `AuthUserStruct` and `test_db_connection_py`.
-- **Python example**: `python/main.py` shows calling Rust from Python and using the model.
+```
+src/
+├── main.rs              # Axum server entrypoint
+├── lib.rs               # PyO3 module exports
+├── database/            # SQLx + SeaQuery models & connection pool
+├── endpoints/           # HTTP handlers (health, py_example)
+└── middleware/           # Tracing / logging
+python/
+├── call_py_from_rust.py # Python functions invoked by Rust endpoints
+└── call_rust_from_py.py # Demo: calling compiled Rust from Python
+```
 
-## Quick start
+## Prerequisites
 
-### 1) Start Postgres
+- **Rust** (edition 2024)
+- **Python 3.13** (required — PyO3 binds against this specific version)
+- **uv** (recommended Python package manager)
+- **Docker** (optional, for PostgreSQL)
+
+## Getting Started
+
+### 1. Start PostgreSQL (optional)
 
 ```bash
 docker compose up -d
 ```
 
-### 2) Create Python venv (Python 3.13)
+This starts a PostgreSQL 18 instance with default test credentials (`testdbuser` / `testdbpass` / `testdb`) on port 5432.
+
+### 2. Set up Python environment
+
+> **Important:** The Python 3.13 virtual environment **must** be fully configured before compiling. The `build.rs` script queries the active Python interpreter at compile time to locate the standard library — if the venv is missing or not activated, the build will fail or the binary will crash at runtime.
 
 ```bash
-uv venv
+uv venv --python 3.13
+source .venv/bin/activate   # Linux / macOS
+# .venv\Scripts\activate    # Windows
 uv sync
-source .venv/bin/activate
 ```
 
-### 3) Run the Rust server
+### 3. Start the server
 
 ```bash
 cargo run
 ```
 
-Server runs at `http://127.0.0.1:3000`
+Server listens at `http://127.0.0.1:3000`.
 
-## Endpoints
+## API Endpoints
 
-- `GET /health` → `OK`
-- `GET /py_example` → calls `python/main.py`’s `User.greet()`
-- `GET /docs` → Swagger UI (OpenAPI JSON at `/api-docs/openapi.json`)
+| Method | Path                      | Description                    |
+| ------ | ------------------------- | ------------------------------ |
+| `GET`  | `/health`                 | Health check                   |
+| `GET`  | `/handle_py_example_cls`  | Call Python class from Rust    |
+| `GET`  | `/handle_py_example_func` | Call Python function from Rust |
+| `GET`  | `/docs`                   | Swagger UI                     |
+| `GET`  | `/api-docs/openapi.json`  | OpenAPI spec                   |
 
-## Python example (calling Rust)
+## Calling Rust from Python
+
+Build the native module with [maturin](https://github.com/PyO3/maturin), then run the demo script:
 
 ```bash
-python python/main.py
+maturin develop
+python python/call_rust_from_py.py
 ```
 
-## Development notes
+## Environment Variables
 
-- DB connection settings are currently hard-coded in `src/database/mod.rs`.
-- The sample Postgres config is in `docker-compose.yml`.
+### Database (required when using DB features)
 
-## Env hints
+| Variable      | Description       | Default |
+| ------------- | ----------------- | ------- |
+| `DB_NAME`     | Database name     | —       |
+| `DB_USER`     | Database user     | —       |
+| `DB_PASSWORD` | Database password | —       |
+| `DB_HOST`     | Database host     | —       |
+| `DB_PORT`     | Database port     | `5432`  |
 
-if you run into issues with loading the Python shared library, set these env vars before running the Rust server:
+### Python / Runtime
 
-```
-# use this line to read LIBDIR in your system, with the correct venv activated
-# python -c "import sysconfig; print('LIBDIR=', sysconfig.get_config_var('LIBDIR')); print('LDLIBRARY=', sysconfig.get_config_var('LDLIBRARY'))"
-export PYO3_PYTHON="$(pwd)/.venv/bin/python"
-export LD_LIBRARY_PATH="/root/.local/share/uv/python/cpython-3.13.3-linux-x86_64-gnu/lib:$LD_LIBRARY_PATH"
-```
+| Variable      | Description                                                                         | Default                                          |
+| ------------- | ----------------------------------------------------------------------------------- | ------------------------------------------------ |
+| `PYTHONHOME`  | Override embedded Python stdlib path                                                | Auto-detected at compile time via `build.rs`     |
+| `PYO3_PYTHON` | Python interpreter for compilation, set it to avoid pyo3 re-compilation over builds | `.venv/bin/python` (set in `.cargo/config.toml`) |
+| `RUST_LOG`    | Tracing filter directive                                                            | `info`                                           |
+
+## How Python Enviroment Works with Build
+
+The `build.rs` script runs at compile time to detect the Python base prefix (`sys.base_prefix`) and embeds it into the binary as `PY_BASE_PREFIX`. At startup, `main.rs` sets `PYTHONHOME` from this value so the embedded interpreter can locate its standard library 
+— no manual environment variable configuration needed, unless you want to override the default `PYTHONHOME`.
+
+## License
+
+MIT
