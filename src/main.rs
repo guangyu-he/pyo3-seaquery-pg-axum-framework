@@ -2,11 +2,13 @@ use std::env;
 
 use axum::{Router, routing::get};
 use tower_http::trace::{DefaultMakeSpan, DefaultOnRequest, DefaultOnResponse, TraceLayer};
-use tracing::Level;
+use tracing::{Level, error};
 use utoipa::OpenApi;
 use utoipa_swagger_ui::SwaggerUi;
 
+use pyo3_seaquery_pg_axum_framework::database::start_conn_pool;
 use pyo3_seaquery_pg_axum_framework::endpoints::ApiDoc;
+use pyo3_seaquery_pg_axum_framework::endpoints::database::handle_db_health;
 use pyo3_seaquery_pg_axum_framework::endpoints::health::health;
 use pyo3_seaquery_pg_axum_framework::endpoints::py_example::{
     handle_py_example_cls, handle_py_example_func,
@@ -26,11 +28,21 @@ async fn main() {
 
     init_tracing();
 
+    let pool = match start_conn_pool().await {
+        Ok(pool) => pool.clone(),
+        Err(e) => {
+            error!("Failed to create database pool: {}", e);
+            panic!("Failed to create database pool");
+        }
+    };
+
     let app = Router::new()
-        .route("/handle_py_example_cls", get(handle_py_example_cls))
-        .route("/handle_py_example_func", get(handle_py_example_func))
+        .route("/py_example_cls", get(handle_py_example_cls))
+        .route("/py_example_func", get(handle_py_example_func))
         .route("/health", get(health))
+        .route("/db_health", get(handle_db_health))
         .merge(SwaggerUi::new("/docs").url("/api-docs/openapi.json", ApiDoc::openapi()))
+        .with_state(pool)
         .layer(
             TraceLayer::new_for_http()
                 .make_span_with(DefaultMakeSpan::new().level(Level::INFO))

@@ -5,7 +5,7 @@ use pyo3::{PyResult, Python};
 
 #[utoipa::path(
     get,
-    path = "/handle_py_example_cls",
+    path = "/py_example_cls",
     responses(
         (status = 200, description = "Example of Python class binding", body = String)
     )
@@ -40,7 +40,7 @@ pub async fn handle_py_example_cls() -> impl IntoResponse {
 
 #[utoipa::path(
     get,
-    path = "/handle_py_example_func",
+    path = "/py_example_func",
     responses(
         (status = 200, description = "Example of Python function binding", body = String)
     )
